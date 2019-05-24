@@ -13,11 +13,21 @@ namespace FlightGearWebApp
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+            routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+
+
+            routes.MapRoute("save", "save/{ip}/{port}/{time}/{timeout}/{fileName}",
+            defaults: new { controller = "Map", action = "save" });
+
+            routes.MapRoute("display", "display/{ip}/{port}/{time}",
+            defaults: new { controller = "Map", action = "display" , time = UrlParameter.Optional });
+
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
+                defaults: new { controller = "Map", action = "Index", id = UrlParameter.Optional }
             );
+
         }
     }
 }

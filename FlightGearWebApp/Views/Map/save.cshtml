@@ -1,0 +1,46 @@
+﻿@*@{
+        ViewBag.Title = "display";
+    }*@
+
+<html>
+<body>
+
+    @*<style>
+            img {
+                max-width: 100%;
+                max-height: 100%;
+            }
+        </style>
+
+        <img src="~/Resources/export-map-share.png" />*@
+
+    <p>Lat is:</p>
+
+    <p type="text" id="networkLat" size="5"></p>
+    <p type="text" id="networkLon" size="5"></p>
+
+</body>
+</html>
+
+
+<script>
+    var IntervalTime = @Session["time"] * 1000
+    drawAndSave = (function () {
+            $.post("@Url.Action("GetNetwork")").done(function (xml) {
+                var xmlDoc = $.parseXML(xml),
+                    $xml = $(xmlDoc),
+                    NetworkLat = $xml.find("Lat").text();
+                NetworkLon = $xml.find("Lon").text();
+                $("#networkLat").text(NetworkLat);
+                $("#networkLon").text(NetworkLon);
+            });
+    });
+    var functionInterval = setInterval(drawAndSave, IntervalTime);
+
+    stopDrawAndSave = (functionInterval) => { clearInterval(functionInterval); alert("SHEKETTTT") };
+    setTimeout(stopDrawAndSave, 10000);
+
+    drawAndSave();
+
+</script>
+
