@@ -11,13 +11,13 @@ namespace FlightGearWebApp.Controllers
 {
     public class MapController : Controller
     {
-        // GET: Map
+        // GET: Map Index
         public ActionResult Index()
         {
             return View();
         }
 
-        // GET: Map
+        // GET: Map display
         public ActionResult display(string ip, int port, int time = 1000000)
         {
             InfoModel.Instance.NetworkConnection.Ip = ip;
