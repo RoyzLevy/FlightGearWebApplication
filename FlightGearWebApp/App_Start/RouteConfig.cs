@@ -16,7 +16,7 @@ namespace FlightGearWebApp
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
 
-            routes.MapRoute("save", "save/{ip}/{port}/{time}/{timeout}/{fileName}",
+            routes.MapRoute("save", "save/{ip}/{port}/{time}/{timeout}/{filePath}",
             defaults: new { controller = "Map", action = "save" });
 
             routes.MapRoute("display", "display/{ip}/{port}/{time}",

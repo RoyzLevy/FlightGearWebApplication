@@ -11,6 +11,7 @@ namespace FlightGearWebApp.Controllers
 {
     public class MapController : Controller
     {
+        const int MaxTimeInterval = 1000000;
         // GET: Map
         public ActionResult Index()
         {
@@ -18,7 +19,7 @@ namespace FlightGearWebApp.Controllers
         }
 
         // GET: Map
-        public ActionResult display(string ip, int port, int time = 1000000)
+        public ActionResult display(string ip, int port, int time = MaxTimeInterval)
         {
             InfoModel.Instance.NetworkConnection.Ip = ip;
             InfoModel.Instance.NetworkConnection.Port = port;
@@ -30,19 +31,31 @@ namespace FlightGearWebApp.Controllers
             return View();
         }
 
-        public ActionResult save(string ip, int port, int time, int timeout, string fileName )
+        public ActionResult save(string ip, int port, int time, int timeout, string filePath )
         {
             InfoModel.Instance.NetworkConnection.Ip = ip;
             InfoModel.Instance.NetworkConnection.Port = port;
             InfoModel.Instance.Time = time;
             InfoModel.Instance.Timeout = timeout;
-            InfoModel.Instance.FileName = fileName;
+            InfoModel.Instance.FilePath = AppDomain.CurrentDomain.BaseDirectory + filePath + ".csv";
             InfoModel.Instance.Start(); // connect to server for reading.
 
             Session["time"] = time;
+            Session["timeout"] = timeout;
 
             return View();
         }
+
+        [HttpPost]
+        public string OpenNewFile()
+        {
+            string fileName = InfoModel.Instance.FilePath;
+            InfoModel.Instance.CreateFile(fileName);
+
+
+            return fileName;
+        }
+
 
         // These function initializes an XML format of the Network object.
         [HttpPost]
