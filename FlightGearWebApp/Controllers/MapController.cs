@@ -12,13 +12,13 @@ namespace FlightGearWebApp.Controllers
     public class MapController : Controller
     {
         const int MaxTimeInterval = 1000000;
-        // GET: Map
+        // GET: Map Index
         public ActionResult Index()
         {
             return View();
         }
 
-        // GET: Map
+        // GET: Map display
         public ActionResult display(string ip, int port, int time = MaxTimeInterval)
         {
             InfoModel.Instance.NetworkConnection.Ip = ip;
