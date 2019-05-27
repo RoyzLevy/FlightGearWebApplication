@@ -14,7 +14,7 @@
 
         <img src="~/Resources/export-map-share.png" />*@
 
-    <p>Lat is:</p>
+    <p>Lat6 is:</p>
 
     <p type="text" id="networkLat" size="5"></p>
     <p type="text" id="networkLon" size="5"></p>
@@ -35,6 +35,7 @@
                 $("#networkLon").text(NetworkLon);
             });
     });
+    alert("Entered Save");
     var functionInterval = setInterval(drawAndSave, IntervalTime);
 
     stopDrawAndSave = (functionInterval) => { clearInterval(functionInterval); alert("SHEKETTTT") };
