@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using FlightGearWebApp.Models;
+using System.IO;
+using System.Text;
 
 namespace FlightGearWebApp.Models
 {
@@ -24,7 +26,7 @@ namespace FlightGearWebApp.Models
 
         public int Time { get; set; }
         public int Timeout { get; set; }
-        public string FileName { get; set; }
+        public string FilePath { get; set; }
 
         public NetworkConnection NetworkConnection { get; private set; }
 
@@ -37,6 +39,13 @@ namespace FlightGearWebApp.Models
         {
             NetworkConnection.Connect();
             NetworkConnection.read();
+        }
+
+        public void CreateFile(string filePath)
+        {
+            StreamWriter streamWriter = new StreamWriter(filePath);
+            streamWriter.WriteLineAsync("aka"); // the writing needs to be done in another func.
+            streamWriter.Close(); // closing will also be in it's own func.
         }
     }
 }
