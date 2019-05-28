@@ -5,6 +5,7 @@ using System.Web;
 using FlightGearWebApp.Models;
 using System.IO;
 using System.Text;
+using System.Diagnostics;
 
 namespace FlightGearWebApp.Models
 {
@@ -18,8 +19,10 @@ namespace FlightGearWebApp.Models
             {
                 if (s_instace == null)
                 {
+                    Debug.WriteLine("network in info model was null");
                     s_instace = new InfoModel();
                 }
+                Debug.WriteLine("Returning network - from the GetNetwrok retquest from js");
                 return s_instace;
             }
         }
@@ -38,13 +41,14 @@ namespace FlightGearWebApp.Models
         public void Start()
         {
             NetworkConnection.Connect();
-            NetworkConnection.read();
         }
 
         public void CreateFile(string filePath)
         {
             StreamWriter streamWriter = new StreamWriter(filePath);
-            streamWriter.WriteLineAsync("aka"); // the writing needs to be done in another func.
+            streamWriter.WriteLineAsync(NetworkConnection.Lon.ToString()); // the writing needs to be done in another func.
+            streamWriter.WriteLineAsync(NetworkConnection.Lon.ToString()); // the writing needs to be done in another func.
+            streamWriter.WriteLineAsync("\n"); // the writing needs to be done in another func.
             streamWriter.Close(); // closing will also be in it's own func.
         }
     }
