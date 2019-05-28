@@ -32,6 +32,7 @@
     function drawAndSavePlanePath() {
         if (IntervalTimeout <= 0) {
             clearInterval(functionIntervalId);
+            $.post("@Url.Action("CloseFile")");
         }
         $.post("@Url.Action("GetNetwork")").done(function (xml) {
             var xmlDoc = $.parseXML(xml),
@@ -40,6 +41,8 @@
             NetworkLon = $xml.find("Lon").text();
             $("#networkLat").text(NetworkLat);
             $("#networkLon").text(NetworkLon);
+
+            $.post("@Url.Action("WriteToFile")");
         });
         IntervalTimeout -= IntervalTime;
     }

@@ -27,10 +27,9 @@ namespace FlightGearWebApp.Controllers
             {
                 // if the route action should be simple display.
                 // return the normal display with default time.
-                //if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork
-                //    || ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-                //{
-                if (ip.Equals("127.0.0.1")) {
+                if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork
+                    || ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+                {
                     InfoModel.Instance.NetworkConnection.Ip = ip;
                     InfoModel.Instance.NetworkConnection.Port = port;
                     InfoModel.Instance.Time = time;
@@ -39,10 +38,8 @@ namespace FlightGearWebApp.Controllers
                     Session["time"] = time;
                     Session["isNetworkDisplay"] = "1";
                     return View();
-
                 }
             }
-
             // else, the ip is file name and the port is display-rate
             // and will return the display from the given file.
                 InfoModel.Instance.FilePath = ip;
@@ -75,10 +72,26 @@ namespace FlightGearWebApp.Controllers
             string fileName = InfoModel.Instance.FilePath;
             InfoModel.Instance.CreateFile(fileName);
 
+            return fileName;
+        }
+
+        [HttpPost]
+        public string WriteToFile()
+        {
+            string fileName = InfoModel.Instance.FilePath;
+            InfoModel.Instance.WriteToFile(fileName);
 
             return fileName;
         }
 
+        [HttpPost]
+        public string CloseFile()
+        {
+            string fileName = InfoModel.Instance.FilePath;
+            InfoModel.Instance.CloseFile(fileName);
+
+            return fileName;
+        }
 
         // These function initializes an XML format of the Network object.
         [HttpPost]
