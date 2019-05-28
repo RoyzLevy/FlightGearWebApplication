@@ -33,7 +33,7 @@ namespace FlightGearWebApp.Controllers
                     InfoModel.Instance.NetworkConnection.Ip = ip;
                     InfoModel.Instance.NetworkConnection.Port = port;
                     InfoModel.Instance.Time = time;
-                    InfoModel.Instance.StartNetWorkRead(); // connect to server for reading.
+                    InfoModel.Instance.ConnectNetwork(); // connect to server for reading.
 
                     Session["time"] = time;
                     Session["isNetworkDisplay"] = "1";
@@ -58,7 +58,7 @@ namespace FlightGearWebApp.Controllers
             InfoModel.Instance.Time = time;
             InfoModel.Instance.Timeout = timeout;
             InfoModel.Instance.FilePath = AppDomain.CurrentDomain.BaseDirectory + filePath + ".csv";
-            InfoModel.Instance.StartNetWorkRead(); // connect to server for reading.
+            InfoModel.Instance.ConnectNetwork(); // connect to server for reading.
 
             Session["time"] = time;
             Session["timeout"] = timeout;
@@ -99,9 +99,14 @@ namespace FlightGearWebApp.Controllers
         {
             var network = InfoModel.Instance.NetworkConnection;
 
-            network.read(); // read lat and lon from server to network object.
+            network.Write(); // read lat and lon from server to network object.
 
             return ToXml(network);
+        }
+        public void Disconnect()
+        {
+            var network = InfoModel.Instance.NetworkConnection;
+            network.Disconnect();
         }
         private string ToXml(NetworkConnection network)
         {

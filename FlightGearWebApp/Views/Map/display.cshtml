@@ -34,8 +34,8 @@
         drawPlanePath = (function () {
             $.post("@Url.Action("GetNetwork")").done(function (xml) {
                 var xmlDoc = $.parseXML(xml),
-                    $xml = $(xmlDoc),
-                    NetworkLat = $xml.find("Lat").text();
+                $xml = $(xmlDoc),
+                NetworkLat = $xml.find("Lat").text();
                 NetworkLon = $xml.find("Lon").text();
                 $("#networkLat").text(NetworkLat);
                 $("#networkLon").text(NetworkLon);
@@ -46,6 +46,7 @@
     }
     else {
         alert("FROM FILE!");
+
     }
 </script>
 
