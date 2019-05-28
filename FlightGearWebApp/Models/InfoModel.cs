@@ -53,7 +53,7 @@ namespace FlightGearWebApp.Models
         public void WriteToFile(string filePath)
         {
             string toWrite = this.NetworkConnection.Lon.ToString() + "," + this.NetworkConnection.Lat.ToString();
-            this.streamWriter.WriteLineAsync(toWrite); // the writing needs to be done in another func.
+            this.streamWriter.WriteLine(toWrite); // the writing needs to be done in another func.
         }
 
         public void CloseFile(string filePath)

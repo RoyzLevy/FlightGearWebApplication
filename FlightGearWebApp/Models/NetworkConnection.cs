@@ -75,6 +75,7 @@ namespace FlightGearWebApp.Models
             {
                 return;
             }
+            Debug.WriteLine("Connect thread abort");
             connectThread.Abort();
             this.myTcpClient.Close();
             stop = true;

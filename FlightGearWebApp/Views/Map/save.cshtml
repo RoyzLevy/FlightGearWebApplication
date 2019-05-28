@@ -24,26 +24,33 @@
 
 
 <script>
-    var isStop = false;
     $.post("@Url.Action("OpenNewFile")");
-    var IntervalTime = @Session["time"] * 1000
-    var IntervalTimeout = @Session["timeout"] * 1000
+    var IntervalTime = 1000 / @Session["time"];
+    var IntervalTimeout = @Session["timeout"] * 1000 + IntervalTime;
+    alert(IntervalTime);
+
 
     function drawAndSavePlanePath() {
-        if (IntervalTimeout <= 0) {
-            clearInterval(functionIntervalId);
+        if (IntervalTimeout <= IntervalTime) {
+            alert("From js about to close file and client");
             $.post("@Url.Action("CloseFile")");
+            $.post("@Url.Action("Disconnect")");
+            clearInterval(functionIntervalId);
         }
-        $.post("@Url.Action("GetNetwork")").done(function (xml) {
-            var xmlDoc = $.parseXML(xml),
-                $xml = $(xmlDoc),
-                NetworkLat = $xml.find("Lat").text();
-            NetworkLon = $xml.find("Lon").text();
-            $("#networkLat").text(NetworkLat);
-            $("#networkLon").text(NetworkLon);
+        else {
+            $.post("@Url.Action("GetNetwork")").done(function (xml) {
 
+                var xmlDoc = $.parseXML(xml),
+                    $xml = $(xmlDoc),
+                    NetworkLat = $xml.find("Lat").text();
+                NetworkLon = $xml.find("Lon").text();
+                $("#networkLat").text(NetworkLat);
+                $("#networkLon").text(NetworkLon);
+                
+            });
+            alert("About to write");
             $.post("@Url.Action("WriteToFile")");
-        });
+        }
         IntervalTimeout -= IntervalTime;
     }
 

@@ -23,6 +23,10 @@ namespace FlightGearWebApp
             routes.MapRoute("display", "display/{ip}/{port}/{time}",
             defaults: new { controller = "Map", action = "display", time = UrlParameter.Optional });
 
+            // Draw Route
+            routes.MapRoute("draw", "draw",
+            defaults: new { controller = "Map", action = "draw", time = UrlParameter.Optional });
+
             // Default route.
             routes.MapRoute(
                 name: "Default",
