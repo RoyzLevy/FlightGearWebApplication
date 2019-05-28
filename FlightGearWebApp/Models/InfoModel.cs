@@ -5,24 +5,28 @@ using System.Web;
 using FlightGearWebApp.Models;
 using System.IO;
 using System.Text;
+using System.Diagnostics;
 
 namespace FlightGearWebApp.Models
 {
     public class InfoModel
     {
         private static InfoModel s_instace = null;
+
         public static InfoModel Instance
         {
             get
             {
                 if (s_instace == null)
                 {
+                    Debug.WriteLine("network in info model was null");
                     s_instace = new InfoModel();
                 }
+                Debug.WriteLine("Returning network - from the GetNetwrok retquest from js");
                 return s_instace;
             }
         }
-        private StreamWriter streamWriter;
+
         public int Time { get; set; }
         public int Timeout { get; set; }
         public string FilePath { get; set; }
@@ -34,26 +38,18 @@ namespace FlightGearWebApp.Models
             NetworkConnection = new NetworkConnection();
         }
 
-        public void StartNetWorkRead()
+        public void Start()
         {
             NetworkConnection.Connect();
-            NetworkConnection.read();
         }
 
         public void CreateFile(string filePath)
         {
-            this.streamWriter = new StreamWriter(filePath);
-        }
-
-        public void WriteToFile(string filePath)
-        {
-            string toWrite = this.NetworkConnection.Lon.ToString() + "," + this.NetworkConnection.Lat.ToString();
-            this.streamWriter.WriteLineAsync(toWrite); // the writing needs to be done in another func.
-        }
-
-        public void CloseFile(string filePath)
-        {
-            this.streamWriter.Close();
+            StreamWriter streamWriter = new StreamWriter(filePath);
+            streamWriter.WriteLineAsync(NetworkConnection.Lon.ToString()); // the writing needs to be done in another func.
+            streamWriter.WriteLineAsync(NetworkConnection.Lon.ToString()); // the writing needs to be done in another func.
+            streamWriter.WriteLineAsync("\n"); // the writing needs to be done in another func.
+            streamWriter.Close(); // closing will also be in it's own func.
         }
     }
 }
