@@ -42,16 +42,16 @@ namespace FlightGearWebApp.Controllers
             }
             // else, the ip is file name and the port is display-rate
             // and will return the display from the given file.
-                InfoModel.Instance.FilePath = ip;
-                InfoModel.Instance.Time = time;
-            
-                Session["time"] = time;
-                Session["isNetworkDisplay"] = "0";
+            InfoModel.Instance.FilePath = ip;
+            InfoModel.Instance.Time = time;
+
+            Session["time"] = time;
+            Session["isNetworkDisplay"] = "0";
 
             return View();
         }
 
-        public ActionResult save(string ip, int port, int time, int timeout, string filePath )
+        public ActionResult save(string ip, int port, int time, int timeout, string filePath)
         {
             InfoModel.Instance.NetworkConnection.Ip = ip;
             InfoModel.Instance.NetworkConnection.Port = port;
