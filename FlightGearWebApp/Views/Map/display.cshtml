@@ -1,6 +1,6 @@
 ﻿
 @*@{
-    ViewBag.Title = "display";
+    ViewBag.isNetworkDisplay = "display";
 }*@
 
 <html>
@@ -25,19 +25,27 @@
 
 
 <script>
-    var IntervalTime = @Session["time"] * 1000
-    drawPlanePath = (function () {
-        $.post("@Url.Action("GetNetwork")").done(function (xml) {
-            var xmlDoc = $.parseXML(xml),
-            $xml = $(xmlDoc),
-            NetworkLat = $xml.find("Lat").text();
-            NetworkLon = $xml.find("Lon").text();
-            $("#networkLat").text(NetworkLat);
-            $("#networkLon").text(NetworkLon);
-        });
-    });
-    setInterval(drawPlanePath, IntervalTime);
-    drawPlanePath();
+    var isNetworkDisplay = @Session["isNetworkDisplay"];
+    alert(isNetworkDisplay);
+    if (isNetworkDisplay == "1") {
+        alert("NETWORK!");
 
+        var IntervalTime = @Session["time"] * 1000
+        drawPlanePath = (function () {
+            $.post("@Url.Action("GetNetwork")").done(function (xml) {
+                var xmlDoc = $.parseXML(xml),
+                    $xml = $(xmlDoc),
+                    NetworkLat = $xml.find("Lat").text();
+                NetworkLon = $xml.find("Lon").text();
+                $("#networkLat").text(NetworkLat);
+                $("#networkLon").text(NetworkLon);
+            });
+        });
+        setInterval(drawPlanePath, IntervalTime);
+        drawPlanePath();
+    }
+    else {
+        alert("FROM FILE!");
+    }
 </script>
 

@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using FlightGearWebApp.Models;
 using System.Xml;
 using System.Text;
+using System.Net;
 
 namespace FlightGearWebApp.Controllers
 {
@@ -21,12 +22,31 @@ namespace FlightGearWebApp.Controllers
         // GET: Map display
         public ActionResult display(string ip, int port, int time = MaxTimeInterval)
         {
-            InfoModel.Instance.NetworkConnection.Ip = ip;
-            InfoModel.Instance.NetworkConnection.Port = port;
-            InfoModel.Instance.Time = time;
-            InfoModel.Instance.Start(); // connect to server for reading.
+            IPAddress ipAddress;
+            if (IPAddress.TryParse(ip, out ipAddress))
+            {
+                // if the route action should be simple display.
+                // return the normal display with default time.
+                if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork
+                    || ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+                {
+                    InfoModel.Instance.NetworkConnection.Ip = ip;
+                    InfoModel.Instance.NetworkConnection.Port = port;
+                    InfoModel.Instance.Time = time;
+                    InfoModel.Instance.StartNetWorkRead(); // connect to server for reading.
 
-            Session["time"] = time;
+                    Session["time"] = time;
+                    Session["isNetworkDisplay"] = "1";
+                    return View();
+                }
+            }
+            // else, the ip is file name and the port is display-rate
+            // and will return the display from the given file.
+                InfoModel.Instance.FilePath = ip;
+                InfoModel.Instance.Time = time;
+            
+                Session["time"] = time;
+                Session["isNetworkDisplay"] = "0";
 
             return View();
         }
@@ -38,7 +58,7 @@ namespace FlightGearWebApp.Controllers
             InfoModel.Instance.Time = time;
             InfoModel.Instance.Timeout = timeout;
             InfoModel.Instance.FilePath = AppDomain.CurrentDomain.BaseDirectory + filePath + ".csv";
-            InfoModel.Instance.Start(); // connect to server for reading.
+            InfoModel.Instance.StartNetWorkRead(); // connect to server for reading.
 
             Session["time"] = time;
             Session["timeout"] = timeout;
@@ -52,10 +72,26 @@ namespace FlightGearWebApp.Controllers
             string fileName = InfoModel.Instance.FilePath;
             InfoModel.Instance.CreateFile(fileName);
 
+            return fileName;
+        }
+
+        [HttpPost]
+        public string WriteToFile()
+        {
+            string fileName = InfoModel.Instance.FilePath;
+            InfoModel.Instance.WriteToFile(fileName);
 
             return fileName;
         }
 
+        [HttpPost]
+        public string CloseFile()
+        {
+            string fileName = InfoModel.Instance.FilePath;
+            InfoModel.Instance.CloseFile(fileName);
+
+            return fileName;
+        }
 
         // These function initializes an XML format of the Network object.
         [HttpPost]
@@ -85,4 +121,5 @@ namespace FlightGearWebApp.Controllers
         }
 
     }
+
 }
