@@ -94,8 +94,9 @@ namespace FlightGearWebApp.Models
         /// This function Writes a command to server
         /// </summary>
         /// <param name="command">command to server</param>
-        public void Write(string command)   //later make it with no args
+        public void Write()   //later make it with no args
         {
+            string command = "";
             Debug.WriteLine("In NC - Trying to write");
             mutex.WaitOne(); //one command at a time
             Debug.WriteLine("Write claimed mutex");
