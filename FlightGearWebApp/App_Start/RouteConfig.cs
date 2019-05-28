@@ -15,19 +15,20 @@ namespace FlightGearWebApp
 
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
-
+            // Route for timed displaying and saving plane route to file.
             routes.MapRoute("save", "save/{ip}/{port}/{time}/{timeout}/{filePath}",
             defaults: new { controller = "Map", action = "save" });
 
+            // Route for timed display of plane route.
             routes.MapRoute("display", "display/{ip}/{port}/{time}",
-            defaults: new { controller = "Map", action = "display" , time = UrlParameter.Optional });
+            defaults: new { controller = "Map", action = "display", time = UrlParameter.Optional });
 
+            // Default route.
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Map", action = "Index", id = UrlParameter.Optional }
             );
-
         }
     }
 }

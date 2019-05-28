@@ -35,7 +35,7 @@ namespace FlightGearWebApp.Models
             NetworkConnection = new NetworkConnection();
         }
 
-        public void Start()
+        public void StartNetWorkRead()
         {
             NetworkConnection.Connect();
             NetworkConnection.read();
