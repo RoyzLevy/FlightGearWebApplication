@@ -3,5 +3,93 @@
     ViewBag.Title = "draw";
 }
 
-<h2>draw</h2>
 
+<html>
+<body>
+    <h2>draw section</h2>
+    <canvas id="myCanvas" style="border:1px solid black;"></></canvas>
+    <canvas id="myLineCanvas" style="border:1px solid black;"></></canvas>
+    <img id='theImg' src='~/Resources/export-map-share.png'>
+    <style>
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</body>
+</html>
+ 
+<script>
+    var NetworkLon = 0;
+    var NetworkLat = 0;
+    var img = document.getElementById("theImg");
+    var cnvs = document.getElementById("myCanvas");
+    var linecnvs = document.getElementById("myLineCanvas");
+
+    cnvs.style.position = "absolute";
+    cnvs.setAttribute('width', innerWidth);
+    cnvs.setAttribute('height', innerHeight);
+
+
+    linecnvs.style.position = "absolute";
+    linecnvs.setAttribute('width', innerWidth);
+    linecnvs.setAttribute('height', innerHeight);
+    //cnvs.style.left = img.offsetLeft + "px";
+    //cnvs.style.top = img.offsetTop + "px";
+
+    var ctx = cnvs.getContext("2d");
+    var ctl = linecnvs.getContext("2d");
+
+    var preLon = 0;
+    var preLat = 0;
+    //var randLon = Math.floor(Math.random() * 100);
+    //var randLat = Math.floor(Math.random() * 100);
+    var firstTime = "1";
+
+    drawPlanePath = (function () {
+        //Drawing the dot
+        ctx.beginPath();
+        var normalizedLon = ((NetworkLon + 180) * (cnvs.width / 360));
+        var normalizedLat = ((NetworkLat + 90) * (cnvs.height / 90));
+        ctx.clearRect(0, 0, cnvs.width, cnvs.height);
+        ctx.arc(normalizedLon, normalizedLat, 2, 0, 2 * Math.PI, false);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'blue';
+        ctx.stroke();
+        ctx.fillStyle = "red";
+        ctx.fill();
+        /////////////////////
+        //Drawing the line right behind the dot
+        if (firstTime == "0") {
+            ctl.strokeStyle = "red";
+            ctl.lineWidth = 2;
+            ctl.moveTo(preLon, preLat);
+            ctl.lineTo(normalizedLon, normalizedLat);
+            ctl.stroke();
+        }
+        //////////////////////
+        //Updates for next time
+        preLon = normalizedLon;
+        preLat = normalizedLat;
+        firstTime = "0";
+        //randLon = Math.floor(Math.random() * 100);
+        //randLat = Math.floor(Math.random() * 100);
+        ///////////////////////
+    });
+        var IntervalTime = @Session["time"] * 1000
+        getPlanePath = (function () {
+            $.post("@Url.Action("GetNetwork")").done(function (xml) {
+                var xmlDoc = $.parseXML(xml),
+                $xml = $(xmlDoc),
+                NetworkLat = $xml.find("Lat").text();
+                NetworkLon = $xml.find("Lon").text();
+                $("#networkLat").text(NetworkLat);
+                $("#networkLon").text(NetworkLon);
+                alert(NetworkLat);
+                alert(NetworkLon);
+                drawPlanePath();
+            });
+        });
+    setInterval(getPlanePath, IntervalTime);
+    getPlanePath();
+</script>

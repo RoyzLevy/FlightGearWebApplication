@@ -7,6 +7,7 @@ using FlightGearWebApp.Models;
 using System.Xml;
 using System.Text;
 using System.Net;
+using System.Diagnostics;
 
 namespace FlightGearWebApp.Controllers
 {
@@ -16,6 +17,19 @@ namespace FlightGearWebApp.Controllers
         // GET: Map Index
         public ActionResult Index()
         {
+            return View();
+        }
+
+        // GET: Map draw
+        public ActionResult draw(string ip, int port, int time = MaxTimeInterval)
+        {
+            InfoModel.Instance.NetworkConnection.Ip = ip;
+            InfoModel.Instance.NetworkConnection.Port = port;
+            InfoModel.Instance.Time = time;
+            InfoModel.Instance.ConnectNetwork(); // connect to server for reading.
+
+            Session["time"] = time;
+            Debug.WriteLine("Bringing draw view back");
             return View();
         }
 
@@ -98,7 +112,7 @@ namespace FlightGearWebApp.Controllers
         public string GetNetwork()
         {
             var network = InfoModel.Instance.NetworkConnection;
-
+            Debug.WriteLine("about to write");
             network.Write(); // read lat and lon from server to network object.
 
             return ToXml(network);
