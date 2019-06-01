@@ -7,6 +7,7 @@ using FlightGearWebApp.Models;
 using System.IO;
 using System.Text;
 using System.Diagnostics;
+using System.Xml;
 
 namespace FlightGearWebApp.Models
 {
@@ -31,7 +32,11 @@ namespace FlightGearWebApp.Models
         public int Time { get; set; }
         public int Timeout { get; set; }
         public string FilePath { get; set; }
+        public float Lat { get; private set; }
+        public float Lon { get; private set; }
+        public bool isMoreFileLines { get; private set; }
         private StreamWriter streamWriter;
+        private StreamReader streamReader;
 
         public NetworkConnection NetworkConnection { get; private set; }
 
@@ -45,7 +50,7 @@ namespace FlightGearWebApp.Models
             NetworkConnection.Connect();
         }
 
-        public void CreateFile(string filePath)
+        public void OpenFileWrite(string filePath)
         {
             this.streamWriter = new StreamWriter(filePath);
         }
@@ -56,9 +61,45 @@ namespace FlightGearWebApp.Models
             this.streamWriter.WriteLineAsync(toWrite); // the writing needs to be done in another func.
         }
 
-        public void CloseFile(string filePath)
+        public void CloseFileWrite(string filePath)
         {
             this.streamWriter.Close();
+        }
+
+
+
+        public void OpenFileRead(string filePath)
+        {
+            this.isMoreFileLines = true;
+            this.streamReader = new StreamReader(filePath);
+        }
+
+        public void ReadFileValues()
+        {
+            string line = streamReader.ReadLine();
+            if (!String.IsNullOrEmpty(line))
+            {
+                string[] values = line.Split(',');
+
+                this.Lon = float.Parse(values[0]);
+                this.Lat = float.Parse(values[1]);
+            } else
+            {
+                this.isMoreFileLines = false;
+            }
+        }
+
+        public void CloseFileRead(string filePath)
+        {
+            this.streamReader.Close();
+        }
+
+        public void ToXml(XmlWriter writer)
+        {
+            writer.WriteStartElement("InfoModel");
+            writer.WriteElementString("Lat", this.Lat.ToString());
+            writer.WriteElementString("Lon", this.Lon.ToString());
+            writer.WriteEndElement();
         }
     }
 }

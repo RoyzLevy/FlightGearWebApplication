@@ -17,8 +17,8 @@
 
     <p>Lat is:</p>
 
-    <p type="text" id="networkLat" size="5"></p>
-    <p type="text" id="networkLon" size="5"></p>
+    <p type="text" id="Lat" size="5"></p>
+    <p type="text" id="Lon" size="5"></p>
 
 </body>
 </html>
@@ -26,19 +26,18 @@
 
 <script>
     var isNetworkDisplay = @Session["isNetworkDisplay"];
-    alert(isNetworkDisplay);
     if (isNetworkDisplay == "1") {
         alert("NETWORK!");
 
         var IntervalTime = @Session["time"] * 1000
         drawPlanePath = (function () {
-            $.post("@Url.Action("GetNetwork")").done(function (xml) {
+            $.post("@Url.Action("GetNetworkXML")").done(function (xml) {
                 var xmlDoc = $.parseXML(xml),
                 $xml = $(xmlDoc),
                 NetworkLat = $xml.find("Lat").text();
                 NetworkLon = $xml.find("Lon").text();
-                $("#networkLat").text(NetworkLat);
-                $("#networkLon").text(NetworkLon);
+                $("#Lat").text(NetworkLat);
+                $("#Lon").text(NetworkLon);
             });
         });
         setInterval(drawPlanePath, IntervalTime);
@@ -46,7 +45,27 @@
     }
     else {
         alert("FROM FILE!");
-
+        var IntervalTime = @Session["time"] * 1000
+        var isFileEnd = @Session["isFileEnd"];
+        function drawPlanePathFile() {
+            isFileEnd = @Session["isFileEnd"];
+            alert("in script func");
+            if (isFileEnd == "1") {
+                alert("file end");
+                clearInterval(functionIntervalId);
+                $.post("@Url.Action("CloseFileRead")");
+            }
+            $.post("@Url.Action("GetInfoModelXML")").done(function (xml) {
+                var xmlDoc = $.parseXML(xml),
+                $xml = $(xmlDoc),
+                ModelLat = $xml.find("Lat").text();
+                ModelLon = $xml.find("Lon").text();
+                $("#Lat").text(ModelLat);
+                $("#Lon").text(ModelLon);
+            });
+        }
+        var functionIntervalId = setInterval(drawPlanePathFile, IntervalTime);
+        drawPlanePathFile();
     }
 </script>
 

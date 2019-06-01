@@ -42,11 +42,16 @@ namespace FlightGearWebApp.Controllers
             }
             // else, the ip is file name and the port is display-rate
             // and will return the display from the given file.
-            InfoModel.Instance.FilePath = ip;
-            InfoModel.Instance.Time = time;
+            InfoModel.Instance.FilePath = AppDomain.CurrentDomain.BaseDirectory + ip + ".csv";
+            InfoModel.Instance.Time = port;
 
-            Session["time"] = time;
+            Session["time"] = port;
             Session["isNetworkDisplay"] = "0";
+            Session["isFileEnd"] = "0";
+
+            // read data lines from given file for display afterwards.
+            //InfoModel.Instance.ReadFromFile(InfoModel.Instance.FilePath);
+            InfoModel.Instance.OpenFileRead(InfoModel.Instance.FilePath);
 
             return View();
         }
@@ -70,7 +75,7 @@ namespace FlightGearWebApp.Controllers
         public string OpenNewFile()
         {
             string fileName = InfoModel.Instance.FilePath;
-            InfoModel.Instance.CreateFile(fileName);
+            InfoModel.Instance.OpenFileWrite(fileName);
 
             return fileName;
         }
@@ -85,30 +90,58 @@ namespace FlightGearWebApp.Controllers
         }
 
         [HttpPost]
-        public string CloseFile()
+        public string CloseFileWrite()
         {
             string fileName = InfoModel.Instance.FilePath;
-            InfoModel.Instance.CloseFile(fileName);
+            InfoModel.Instance.CloseFileWrite(fileName);
 
             return fileName;
         }
 
-        // These function initializes an XML format of the Network object.
         [HttpPost]
-        public string GetNetwork()
+        public string CloseFileRead()
         {
-            var network = InfoModel.Instance.NetworkConnection;
+            string fileName = InfoModel.Instance.FilePath;
+            InfoModel.Instance.CloseFileRead(fileName);
 
-            network.Write(); // read lat and lon from server to network object.
-
-            return ToXml(network);
+            return fileName;
         }
+
         public void Disconnect()
         {
             var network = InfoModel.Instance.NetworkConnection;
             network.Disconnect();
         }
-        private string ToXml(NetworkConnection network)
+
+        // These function initializes an XML format of the Network object.
+        [HttpPost]
+        public string GetNetworkXML()
+        {
+            var network = InfoModel.Instance.NetworkConnection;
+
+            network.Write(); // read lat and lon from server to network object.
+
+            return this.NetworkToXML(network);
+        }
+
+        [HttpPost]
+        public string GetInfoModelXML()
+        {
+            var model = InfoModel.Instance;
+
+            // if there are more file lines, update the model info from file.
+            if (model.isMoreFileLines)
+            {
+                model.ReadFileValues();
+
+                return this.InfoModelToXML(model);
+            } 
+            Session["isFileEnd"] = "1";
+            return "1";
+
+        }
+
+        private string NetworkToXML(NetworkConnection network)
         {
             StringBuilder sb = new StringBuilder();
             XmlWriterSettings settings = new XmlWriterSettings();
@@ -118,6 +151,23 @@ namespace FlightGearWebApp.Controllers
             writer.WriteStartElement("NetworkConnections");
 
             network.ToXml(writer);
+
+            writer.WriteEndElement();
+            writer.WriteEndDocument();
+            writer.Flush();
+            return sb.ToString();
+        }
+
+        public string InfoModelToXML(InfoModel model)
+        {
+            StringBuilder sb = new StringBuilder();
+            XmlWriterSettings settings = new XmlWriterSettings();
+            XmlWriter writer = XmlWriter.Create(sb, settings);
+
+            writer.WriteStartDocument();
+            writer.WriteStartElement("InfoModels");
+
+            model.ToXml(writer);
 
             writer.WriteEndElement();
             writer.WriteEndDocument();
