@@ -13,7 +13,6 @@ namespace FlightGearWebApp.Controllers
 {
     public class MapController : Controller
     {
-        const int MaxTimeInterval = 1000000;
         // GET: Map Index
         public ActionResult Index()
         {
@@ -21,7 +20,7 @@ namespace FlightGearWebApp.Controllers
         }
 
         // GET: Map draw
-        public ActionResult draw(string ip, int port, int time = MaxTimeInterval)
+        public ActionResult draw(string ip, int port, int time = 0)
         {
             InfoModel.Instance.NetworkConnection.Ip = ip;
             InfoModel.Instance.NetworkConnection.Port = port;
@@ -34,8 +33,9 @@ namespace FlightGearWebApp.Controllers
         }
 
         // GET: Map display
-        public ActionResult display(string ip, int port, int time = MaxTimeInterval)
+        public ActionResult display(string ip, int port, int time = 0)
         {
+            Debug.WriteLine("Hello from MapController with network display unknown!");
             IPAddress ipAddress;
             if (IPAddress.TryParse(ip, out ipAddress))
             {
@@ -54,14 +54,14 @@ namespace FlightGearWebApp.Controllers
                     return View();
                 }
             }
-            // else, the ip is file name and the port is display-rate
+            // else, the ip is a file name thus the port is the display-rate
             // and will return the display from the given file.
-                InfoModel.Instance.FilePath = ip;
-                InfoModel.Instance.Time = time;
+                InfoModel.Instance.FilePath = AppDomain.CurrentDomain.BaseDirectory + ip + ".csv";
+                InfoModel.Instance.Time = port;
             
-                Session["time"] = time;
+                Session["time"] = port;
                 Session["isNetworkDisplay"] = "0";
-
+                InfoModel.Instance.OpenFileRead(InfoModel.Instance.FilePath);
             return View();
         }
 
@@ -83,8 +83,9 @@ namespace FlightGearWebApp.Controllers
         [HttpPost]
         public string OpenNewFile()
         {
+            Debug.WriteLine("creating a file");
             string fileName = InfoModel.Instance.FilePath;
-            InfoModel.Instance.CreateFile(fileName);
+            InfoModel.Instance.OpenFileWrite(fileName);
 
             return fileName;
         }
@@ -92,6 +93,7 @@ namespace FlightGearWebApp.Controllers
         [HttpPost]
         public string WriteToFile()
         {
+            Debug.WriteLine("start writing");
             string fileName = InfoModel.Instance.FilePath;
             InfoModel.Instance.WriteToFile(fileName);
 
@@ -99,30 +101,67 @@ namespace FlightGearWebApp.Controllers
         }
 
         [HttpPost]
-        public string CloseFile()
+        public string CloseFileRead()   //NEW
         {
             string fileName = InfoModel.Instance.FilePath;
-            InfoModel.Instance.CloseFile(fileName);
+            InfoModel.Instance.CloseFileRead(fileName);
 
             return fileName;
         }
 
-        // These function initializes an XML format of the Network object.
         [HttpPost]
-        public string GetNetwork()
+        public string CloseFileWrite()   //NEW
         {
-            var network = InfoModel.Instance.NetworkConnection;
-            Debug.WriteLine("about to write");
-            network.Write(); // read lat and lon from server to network object.
+            string fileName = InfoModel.Instance.FilePath;
+            InfoModel.Instance.CloseFileWrite(fileName);
 
-            return ToXml(network);
+            return fileName;
         }
-        public void Disconnect()
+
+        [HttpPost]
+        public string GetInfoModelXML() //NEW
         {
+            var model = InfoModel.Instance;
+
+            // if there are more file lines, update the model info from file.
+            if (model.isMoreFileLines)
+            {
+                model.ReadFileValues();
+            }
+            return this.InfoModelToXML(model);
+        }
+
+        // These function initializes an XML format of the Network object.
+        //[HttpPost]
+        //public string GetNetwork()          
+        //{
+        //    var network = InfoModel.Instance.NetworkConnection;
+        //    Debug.WriteLine("about to write");
+        //    network.Write(); // read lat and lon from server to network object.
+
+        //    return ToXml(network);
+        //}
+
+
+        [HttpPost]
+        public string Disconnect()
+        {
+            Debug.WriteLine("Hello from MapController in pre network disconnect");
             var network = InfoModel.Instance.NetworkConnection;
             network.Disconnect();
+            return "Simply-The-Best";
         }
-        private string ToXml(NetworkConnection network)
+        // These function initializes an XML format of the Network object.
+        [HttpPost]
+        public string GetNetworkXML()   //NEW
+        {
+            var network = InfoModel.Instance.NetworkConnection;
+
+            network.Write(); // read lat and lon from server to network object.
+
+            return this.NetworkToXML(network);
+        }
+        private string NetworkToXML(NetworkConnection network)  //NEW
         {
             StringBuilder sb = new StringBuilder();
             XmlWriterSettings settings = new XmlWriterSettings();
@@ -132,6 +171,40 @@ namespace FlightGearWebApp.Controllers
             writer.WriteStartElement("NetworkConnections");
 
             network.ToXml(writer);
+
+            writer.WriteEndElement();
+            writer.WriteEndDocument();
+            writer.Flush();
+            return sb.ToString();
+        }
+
+        //private string ToXml(NetworkConnection network)
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    XmlWriterSettings settings = new XmlWriterSettings();
+        //    XmlWriter writer = XmlWriter.Create(sb, settings);
+
+        //    writer.WriteStartDocument();
+        //    writer.WriteStartElement("NetworkConnections");
+
+        //    network.ToXml(writer);
+
+        //    writer.WriteEndElement();
+        //    writer.WriteEndDocument();
+        //    writer.Flush();
+        //    return sb.ToString();
+        //}
+
+        public string InfoModelToXML(InfoModel model)
+        {
+            StringBuilder sb = new StringBuilder();
+            XmlWriterSettings settings = new XmlWriterSettings();
+            XmlWriter writer = XmlWriter.Create(sb, settings);
+
+            writer.WriteStartDocument();
+            writer.WriteStartElement("InfoModels");
+
+            model.ToXml(writer);
 
             writer.WriteEndElement();
             writer.WriteEndDocument();

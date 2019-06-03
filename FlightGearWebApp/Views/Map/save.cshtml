@@ -1,61 +1,72 @@
-﻿@*@{
-        ViewBag.Title = "display";
-    }*@
+﻿@{
+        ViewBag.Title = "save";
+    }
 
 <html>
-<body>
-
-    @*<style>
-            img {
-                max-width: 100%;
-                max-height: 100%;
-            }
-        </style>
-
-        <img src="~/Resources/export-map-share.png" />*@
-
-    <p>Lat is:</p>
-
-    <p type="text" id="networkLat" size="5"></p>
-    <p type="text" id="networkLon" size="5"></p>
-
+<body background="~/Resources/export-map-share.png" style="background-repeat:no-repeat; background-size:cover" id="bgImg">
+    <canvas id="myCanvas" style="border:0.5px solid black;z-index:2;position:absolute; margin:0px 0px 0px 0px"></></canvas>
+    <canvas id="myLineCanvas" style="border:0.5px solid black;z-index:1; margin:0px 0px 0px 0px"></></canvas>
 </body>
 </html>
 
-
 <script>
+    singleDraw = (function () {
+        ctx.beginPath();
+        ctx.clearRect(0, 0, cnvs.width, cnvs.height);
+        ctx.arc(normalizedLon, normalizedLat, 2, 0, 100 * Math.PI, false);
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = 'blue';
+        ctx.stroke();
+        ctx.fillStyle = "red";
+        ctx.fill();
+        /////////////////////
+        //Drawing the line right behind the dot
+        if (firstTime == "0") {
+            ctl.strokeStyle = "red";
+            ctl.lineWidth = 2;
+            ctl.moveTo(preLon, preLat);
+            ctl.lineTo(normalizedLon, normalizedLat);
+            ctl.stroke();
+        }
+        //////////////////////
+        //Updates for next time for drawing line
+        preLon = normalizedLon;
+        preLat = normalizedLat;
+        firstTime = "0";
+        //normalizedLon = Math.floor(Math.random() * 100);
+        //normalizedLat = Math.floor(Math.random() * 100);
+        ///////////////////////
+    });
+
+    var stop = "false";
     $.post("@Url.Action("OpenNewFile")");
-    var IntervalTime = 1000 / @Session["time"];
-    var IntervalTimeout = @Session["timeout"] * 1000 + IntervalTime;
-    alert(IntervalTime);
-
-
+    var IntervalTime = @Session["time"] * 1000
+    var IntervalTimeout = @Session["timeout"] * 1000
     function drawAndSavePlanePath() {
         if (IntervalTimeout <= IntervalTime) {
-            alert("From js about to close file and client");
-            $.post("@Url.Action("CloseFile")");
-            $.post("@Url.Action("Disconnect")");
+            stop = "true";
+            //alert("Done writing!")
             clearInterval(functionIntervalId);
         }
-        else {
-            $.post("@Url.Action("GetNetwork")").done(function (xml) {
-
+        $.post("@Url.Action("GetNetworkXML")").done(function (xml) {
+            if (stop == "false") {
+                //alert("writing..");
                 var xmlDoc = $.parseXML(xml),
                     $xml = $(xmlDoc),
                     NetworkLat = $xml.find("Lat").text();
                 NetworkLon = $xml.find("Lon").text();
                 $("#networkLat").text(NetworkLat);
                 $("#networkLon").text(NetworkLon);
-                
-            });
-            alert("About to write");
-            $.post("@Url.Action("WriteToFile")");
-        }
+                $.post("@Url.Action("WriteToFile")");
+            }
+            else {
+                 $.post("@Url.Action("CloseFileWrite")");
+                $.post("@Url.Action("Disconnect")");
+                $("#message").text("Done writing to file");
+            }
+        });
         IntervalTimeout -= IntervalTime;
     }
-
     var functionIntervalId = setInterval(drawAndSavePlanePath, IntervalTime);
     drawAndSavePlanePath();
-
 </script>
-

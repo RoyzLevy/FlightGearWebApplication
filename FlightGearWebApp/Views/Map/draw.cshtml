@@ -5,41 +5,65 @@
 
 
 <html>
-<body>
-    <canvas id="myCanvas" style="border:1px solid black;"></></canvas>
-    <canvas id="myLineCanvas" style="border:1px solid black;"></></canvas>
-    <img id='theImg' src='~/Resources/export-map-share.png'>
-    <style>
-        img {
-            max-width: 100%;
-            max-height: 100%;
-        }
-    </style>
+<body background="~/Resources/export-map-share.png" style="background-repeat:no-repeat; background-size:cover; padding:0; margin:0" id="bgImg">
+    <canvas id="myCanvas" style="border:0.5px solid black;z-index:2;position:absolute"></></canvas>
+    <canvas id="myLineCanvas" style="border:0.5px solid black;z-index:1"></></canvas>
 </body>
 </html>
- 
+
 <script>
+
+
+    //Disable zoom section///
+
+    $(document).keydown(function (event) {
+        if (event.ctrlKey == true && (event.which == '61' || event.which == '107' || event.which == '173' || event.which == '109' || event.which == '187' || event.which == '189')) {
+            event.preventDefault();
+        }
+        // 107 Num Key  +
+        // 109 Num Key  -
+        // 173 Min Key  hyphen/underscor Hey
+        // 61 Plus key  +/= key
+    });
+
+    $(window).bind('mousewheel DOMMouseScroll', function (event) {
+        if (event.ctrlKey == true) {
+            event.preventDefault();
+        }
+    });
+
+
+    ////////////////////////
+
+    //Find out if user is leaving or refreshing////check for Navigation Timing API support
+    
+    ////
+
+
+    var img = document.getElementById('bgImg');
     var NetworkLon = 0;
     var NetworkLat = 0;
     var normalizedLon = 0;
     var normalizedLat = 0;
-    var img = document.getElementById("theImg");
+
     var cnvs = document.getElementById("myCanvas");
     var linecnvs = document.getElementById("myLineCanvas");
 
-    cnvs.style.position = "absolute";
-    cnvs.setAttribute('width', innerWidth);
-    cnvs.setAttribute('height', innerHeight);
+    
+
+    //cnvs.style.position = "absolute";
+    cnvs.setAttribute('width', img.clientWidth);
+    cnvs.setAttribute('height', (Window.innerHeight));
     //cnvs.setAttribute('width', 2000);
     //cnvs.setAttribute('height', 2000);
 
     //cnvs.width = window.innerWidth;
     //cnvs.height = window.innerHeight;
 
-
-    linecnvs.style.position = "absolute";
-    linecnvs.setAttribute('width', innerWidth);
-    linecnvs.setAttribute('height', innerHeight);
+    
+    //linecnvs.style.position = "absolute";
+    linecnvs.setAttribute('width', img.clientWidth);
+    linecnvs.setAttribute('height', Window.innerHeight);
     //cnvs.style.left = img.offsetLeft + "px";
     //cnvs.style.top = img.offsetTop + "px";
 
@@ -52,6 +76,24 @@
     //var randLat = Math.floor(Math.random() * 100);
     var firstTime = "1";
 
+    disconnect = (function () {
+        alert("about to disconnect");
+        $.post("@Url.Action("disconnect")");
+    });
+
+    //Refresh Segment//
+
+    window.onunload = function (e) {
+        // Firefox || IE
+        e = e || window.event;
+
+        var y = e.pageY || e.clientY;
+
+        if (y < 0) alert("Window closed");
+        else alert("Window refreshed");
+
+    }
+    //////////////////////////
     drawPlanePath = (function () {
         //Drawing the dot
         ctx.beginPath();
@@ -104,4 +146,5 @@
         });
     setInterval(getPlanePath, IntervalTime);
     getPlanePath();
+
 </script>

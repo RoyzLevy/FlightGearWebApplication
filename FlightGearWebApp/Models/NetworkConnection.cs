@@ -45,7 +45,6 @@ namespace FlightGearWebApp.Models
             this.myTcpClient = new TcpClient();
             this.connectThread = new Thread(() =>
             {
-                mutex.WaitOne();
                 while (!myTcpClient.Connected)
                 {
                     try
@@ -61,7 +60,6 @@ namespace FlightGearWebApp.Models
                 }
                 /** Upon reaching here program has been connected */
                 Debug.WriteLine("Connected!");
-                mutex.ReleaseMutex();
                 Debug.WriteLine("NC - Mutex was released from connect");
             });
             this.connectThread.Start();
@@ -71,8 +69,10 @@ namespace FlightGearWebApp.Models
         /// </summary>
         public void Disconnect()
         {
+            Debug.WriteLine("Hello from network disconnect! looking at stop which is " + stop);
             if (stop)
             {
+                Debug.WriteLine("Entered disco but something with flag..");
                 return;
             }
             Debug.WriteLine("Connect thread abort");
@@ -99,7 +99,6 @@ namespace FlightGearWebApp.Models
         {
             string command = "";
             Debug.WriteLine("In NC - Trying to write");
-            mutex.WaitOne(); //one command at a time
             Debug.WriteLine("Write claimed mutex");
             NetworkStream writeStream = this.myTcpClient.GetStream();  //creates a network stream
             command = "get /position/longitude-deg\r\n";
@@ -128,9 +127,6 @@ namespace FlightGearWebApp.Models
             string lat = ParseValue(STR.ReadLine());
             Lat = double.Parse(lat);
 
-
-
-            mutex.ReleaseMutex();
             Debug.WriteLine("Write released mutex");
         }
 
