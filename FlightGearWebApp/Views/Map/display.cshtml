@@ -45,24 +45,24 @@
     }
     else {
         alert("FROM FILE!");
-        var IntervalTime = @Session["time"] * 1000
-        var isFileEnd = @Session["isFileEnd"];
+        var IntervalTime = @Session["time"] * 1000;
+        var isEOF = "0";
+
         function drawPlanePathFile() {
-            isFileEnd = @Session["isFileEnd"];
-            alert("in script func");
-            if (isFileEnd == "1") {
-                alert("file end");
+            if (isEOF === "1") {
+                alert("clear interval");
                 clearInterval(functionIntervalId);
-                $.post("@Url.Action("CloseFileRead")");
+            } else {
+                $.post("@Url.Action("GetInfoModelXML")").done(function (xml) {
+                    var xmlDoc = $.parseXML(xml),
+                    $xml = $(xmlDoc),
+                    ModelLat = $xml.find("Lat").text();
+                    ModelLon = $xml.find("Lon").text();
+                    isEOF = $xml.find("isEOF").text();
+                    $("#Lat").text(ModelLat);
+                    $("#Lon").text(ModelLon);
+                });
             }
-            $.post("@Url.Action("GetInfoModelXML")").done(function (xml) {
-                var xmlDoc = $.parseXML(xml),
-                $xml = $(xmlDoc),
-                ModelLat = $xml.find("Lat").text();
-                ModelLon = $xml.find("Lon").text();
-                $("#Lat").text(ModelLat);
-                $("#Lon").text(ModelLon);
-            });
         }
         var functionIntervalId = setInterval(drawPlanePathFile, IntervalTime);
         drawPlanePathFile();

@@ -7,12 +7,12 @@ using FlightGearWebApp.Models;
 using System.Xml;
 using System.Text;
 using System.Net;
+using System.Threading;
 
 namespace FlightGearWebApp.Controllers
 {
     public class MapController : Controller
     {
-        const int MaxTimeInterval = 1000000;
         // GET: Map Index
         public ActionResult Index()
         {
@@ -20,7 +20,7 @@ namespace FlightGearWebApp.Controllers
         }
 
         // GET: Map display
-        public ActionResult display(string ip, int port, int time = MaxTimeInterval)
+        public ActionResult display(string ip, int port, int time = 0)
         {
             IPAddress ipAddress;
             if (IPAddress.TryParse(ip, out ipAddress))
@@ -47,7 +47,6 @@ namespace FlightGearWebApp.Controllers
 
             Session["time"] = port;
             Session["isNetworkDisplay"] = "0";
-            Session["isFileEnd"] = "0";
 
             // read data lines from given file for display afterwards.
             //InfoModel.Instance.ReadFromFile(InfoModel.Instance.FilePath);
@@ -133,12 +132,8 @@ namespace FlightGearWebApp.Controllers
             if (model.isMoreFileLines)
             {
                 model.ReadFileValues();
-
-                return this.InfoModelToXML(model);
-            } 
-            Session["isFileEnd"] = "1";
-            return "1";
-
+            }
+            return this.InfoModelToXML(model);
         }
 
         private string NetworkToXML(NetworkConnection network)

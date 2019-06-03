@@ -21,10 +21,8 @@ namespace FlightGearWebApp.Models
             {
                 if (s_instace == null)
                 {
-                    Debug.WriteLine("network in info model was null");
                     s_instace = new InfoModel();
                 }
-                Debug.WriteLine("Returning network - from the GetNetwrok retquest from js");
                 return s_instace;
             }
         }
@@ -35,6 +33,7 @@ namespace FlightGearWebApp.Models
         public float Lat { get; private set; }
         public float Lon { get; private set; }
         public bool isMoreFileLines { get; private set; }
+        public string isEOF { get; set; }
         private StreamWriter streamWriter;
         private StreamReader streamReader;
 
@@ -77,15 +76,16 @@ namespace FlightGearWebApp.Models
         public void ReadFileValues()
         {
             string line = streamReader.ReadLine();
-            if (!String.IsNullOrEmpty(line))
+            string[] values = line.Split(',');
+            if (values[0].Equals("$"))
             {
-                string[] values = line.Split(',');
-
-                this.Lon = float.Parse(values[0]);
-                this.Lat = float.Parse(values[1]);
+                this.isEOF = "1";
+                this.isMoreFileLines = false;
+                this.CloseFileRead(this.FilePath);
             } else
             {
-                this.isMoreFileLines = false;
+                this.Lon = float.Parse(values[0]);
+                this.Lat = float.Parse(values[1]);
             }
         }
 
@@ -99,6 +99,7 @@ namespace FlightGearWebApp.Models
             writer.WriteStartElement("InfoModel");
             writer.WriteElementString("Lat", this.Lat.ToString());
             writer.WriteElementString("Lon", this.Lon.ToString());
+            writer.WriteElementString("isEOF", this.isEOF);
             writer.WriteEndElement();
         }
     }
