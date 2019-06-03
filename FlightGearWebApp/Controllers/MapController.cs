@@ -62,10 +62,11 @@ namespace FlightGearWebApp.Controllers
                 Session["time"] = port;
                 Session["isNetworkDisplay"] = "0";
                 InfoModel.Instance.OpenFileRead(InfoModel.Instance.FilePath);
+                
             return View();
         }
 
-        public ActionResult save(string ip, int port, int time, int timeout, string filePath )
+        public ActionResult save(string ip, int port, int time, int timeout, string filePath)
         {
             InfoModel.Instance.NetworkConnection.Ip = ip;
             InfoModel.Instance.NetworkConnection.Port = port;
