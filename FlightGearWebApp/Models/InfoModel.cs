@@ -65,29 +65,22 @@ namespace FlightGearWebApp.Models
 
         public void WriteToFile(string filePath)
         {
-            string toWrite = this.NetworkConnection.Lon.ToString() + "," + this.NetworkConnection.Lat.ToString();
+            string toWrite = this.NetworkConnection.Lon.ToString() + "," + this.NetworkConnection.Lat.ToString() + "," + 
+                this.NetworkConnection.Throttle.ToString() + "," + this.NetworkConnection.Rudder.ToString();
             this.streamWriter.WriteLine(toWrite); // the writing needs to be done in another func.
         }
 
         public void OpenFileRead(string filePath)   //NEW
         {
             this.isMoreFileLines = true;
+            isEOF = "0";
             this.streamReader = new StreamReader(filePath);
-            if (File.Exists(filePath))
-            {
-                Debug.WriteLine("file exist!");
-            }
-            else
-            {
-                Debug.WriteLine("file not exist!");
-            }
         }
 
         public void ReadFileValues()    //NEW
         {
             string line = streamReader.ReadLine();
-            string[] values = line.Split(',');
-            if (values[0].Equals("$"))
+            if (line == null)
             {
                 this.isEOF = "1";
                 this.isMoreFileLines = false;
@@ -95,6 +88,7 @@ namespace FlightGearWebApp.Models
             }
             else
             {
+                string[] values = line.Split(',');
                 this.Lon = float.Parse(values[0]);
                 this.Lat = float.Parse(values[1]);
                 Debug.WriteLine(Lon);

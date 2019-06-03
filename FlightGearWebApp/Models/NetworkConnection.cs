@@ -23,8 +23,12 @@ namespace FlightGearWebApp.Models
 
         public string Ip{ get; set;}
         public int Port { get; set; }
-        public double Lat { get; set; }
         public double Lon { get; set; }
+        public double Lat { get; set; }
+
+        public double Throttle { get; set; }
+        public double Rudder { get; set; }
+
 
         /// <summary>
         /// Connect opens program as server and looks for a server to reach
@@ -101,6 +105,8 @@ namespace FlightGearWebApp.Models
             Debug.WriteLine("In NC - Trying to write");
             Debug.WriteLine("Write claimed mutex");
             NetworkStream writeStream = this.myTcpClient.GetStream();  //creates a network stream
+
+            //Lon
             command = "get /position/longitude-deg\r\n";
             int byteCount = Encoding.ASCII.GetByteCount(command); //how many bytes
             byte[] sendData = new byte[byteCount];  //create a buffer
@@ -112,7 +118,6 @@ namespace FlightGearWebApp.Models
             //Debug.WriteLine("Recieved from server " + STR.ReadLine());
             string lon = ParseValue(STR.ReadLine());
             Lon = double.Parse(lon);
-
 
             //Lat
             command = "get /position/latitude-deg\r\n";
@@ -127,6 +132,32 @@ namespace FlightGearWebApp.Models
             string lat = ParseValue(STR.ReadLine());
             Lat = double.Parse(lat);
 
+            //Throttle
+            command = "get /controls/engines/engine/throttle\r\n";
+            byteCount = Encoding.ASCII.GetByteCount(command); //how many bytes
+            sendData = new byte[byteCount];  //create a buffer
+            sendData = Encoding.ASCII.GetBytes(command);   //puts the message in the buffer
+
+            writeStream.Write(sendData, 0, sendData.Length); //network stream to transfer what's in buffer
+            Debug.WriteLine("Just before printing what got back from the server");
+            STR = new StreamReader(writeStream);
+            //Debug.WriteLine("Recieved from server " + STR.ReadLine());
+            string throttle = ParseValue(STR.ReadLine());
+            Throttle = double.Parse(throttle);
+
+            //Rudder
+            command = "get /controls/flight/rudder\r\n";
+            byteCount = Encoding.ASCII.GetByteCount(command); //how many bytes
+            sendData = new byte[byteCount];  //create a buffer
+            sendData = Encoding.ASCII.GetBytes(command);   //puts the message in the buffer
+
+            writeStream.Write(sendData, 0, sendData.Length); //network stream to transfer what's in buffer
+            Debug.WriteLine("Just before printing what got back from the server");
+            STR = new StreamReader(writeStream);
+            //Debug.WriteLine("Recieved from server " + STR.ReadLine());
+            string rudder = ParseValue(STR.ReadLine());
+            Rudder = double.Parse(rudder);
+
             Debug.WriteLine("Write released mutex");
         }
 
@@ -135,8 +166,10 @@ namespace FlightGearWebApp.Models
             writer.WriteStartElement("NetworkConnection");
             writer.WriteElementString("Ip", this.Ip);
             writer.WriteElementString("Port", this.Port.ToString());
-            writer.WriteElementString("Lat", this.Lat.ToString());
             writer.WriteElementString("Lon", this.Lon.ToString());
+            writer.WriteElementString("Lat", this.Lat.ToString());
+            writer.WriteElementString("Throttle", this.Throttle.ToString());
+            writer.WriteElementString("Rudder", this.Rudder.ToString());
             writer.WriteEndElement();
         }
     }
