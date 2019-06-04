@@ -38,12 +38,13 @@ namespace FlightGearWebApp.Models
         /// <param name="sendPort"></param>
         public void Connect()
         {
-            Debug.WriteLine("NC - Mutex was claimed");
-            if (!stop)
-            {
-                Debug.WriteLine("NC - Mutex was released from !stop -> return");
-                return;
-            }
+            Disconnect();
+            //Debug.WriteLine("NC - Mutex was claimed");
+            //if (!stop)
+            //{
+            //    Debug.WriteLine("NC - Mutex was released from !stop -> return");
+            //    return;
+            //}
             stop = false;
 
             this.myTcpClient = new TcpClient();
@@ -101,6 +102,7 @@ namespace FlightGearWebApp.Models
         /// <param name="command">command to server</param>
         public void Write()   //later make it with no args
         {
+            if (stop) { return; }
             string command = "";
             Debug.WriteLine("In NC - Trying to write");
             Debug.WriteLine("Write claimed mutex");

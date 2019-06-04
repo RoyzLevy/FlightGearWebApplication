@@ -11,8 +11,11 @@
 </body>
 </html>
 
+
 <script>
 
+    window.addEventListener('load', resize, false);
+    window.addEventListener('resize', resize, false); // JQuery: $(window).resize(function() {...});
 
     //Disable zoom section///
 
@@ -49,6 +52,23 @@
     var cnvs = document.getElementById("myCanvas");
     var linecnvs = document.getElementById("myLineCanvas");
 
+    /**
+ * Scale proportionally: If the width of the canvas > the height, the canvas height
+ * equals the height of the browser window. Else, the canvas width equals the width of the browser window.
+ * If the window is resized, the size of the canvas changes dynamically.
+ */
+    function resize() {
+        var ratio = cnvs.width / cnvs.height;
+        var canvas_height = window.innerHeight;
+        var canvas_width = canvas_height * ratio;
+        if (canvas_width > window.innerWidth) {
+            canvas_width = window.innerWidth;
+            canvas_height = canvas_width / ratio;
+        }
+
+        cnvs.style.width = canvas_width + 'px';
+        cnvs.style.height = canvas_height + 'px';
+    }
     
 
     //cnvs.style.position = "absolute";

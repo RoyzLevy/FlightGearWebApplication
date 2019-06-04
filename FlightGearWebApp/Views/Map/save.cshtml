@@ -9,6 +9,22 @@
 </html>
 
 <script>
+
+    $(window).bind('mousewheel DOMMouseScroll', function (event) {
+        if (event.ctrlKey == true) {
+            event.preventDefault();
+        }
+    });
+
+        ////Refresh Segment//
+
+    window.onbeforeunload = function (e) {
+            $.post("@Url.Action("Disconnect")");
+            $.post("@Url.Action("CloseFileWrite")");
+        }
+
+
+
     var img = document.getElementById('bgImg');
     img.width = window.innerWidth;
     img.height = window.innerHeight;
@@ -34,7 +50,6 @@
         /////////////////////
         //Drawing the line coming out of the point
         if (firstTime == "0") {
-            alert("Line cont!")
             ctx.strokeStyle = "red";
             ctx.lineWidth = 2;
             ctx.moveTo(preLon, preLat);
@@ -43,7 +58,6 @@
         }
         //Only draw location-point first time
         else {
-            alert("First Time!");
             ctx.beginPath();
             ctx.arc(normalizedLon, normalizedLat, 2, 0, 100 * Math.PI, false);
             ctx.lineWidth = 6;

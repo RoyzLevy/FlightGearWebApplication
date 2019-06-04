@@ -34,6 +34,8 @@ namespace FlightGearWebApp.Models
         public float Lat { get; private set; }
         public float Lon { get; private set; }
         public bool isMoreFileLines { get; private set; }
+        public bool isOpenForWriting { get; private set; }
+        public bool isOpenForReading { get; private set; }
         public string isEOF { get; set; }
         private StreamWriter streamWriter;
         private StreamReader streamReader;
@@ -45,6 +47,7 @@ namespace FlightGearWebApp.Models
         private InfoModel()
         {
             NetworkConnection = new NetworkConnection();
+            isOpenForWriting = false;
         }
 
         public void ConnectNetwork()
@@ -60,25 +63,32 @@ namespace FlightGearWebApp.Models
 
         public void OpenFileWrite(string filePath)
         {
+            if (isOpenForWriting) { Debug.WriteLine("Can't open an already opened file to write"); return; }
             this.streamWriter = new StreamWriter(filePath);
+            isOpenForWriting = true;
         }
 
         public void WriteToFile(string filePath)
         {
+            if (!isOpenForWriting) { Debug.WriteLine("Can't write to closed file"); return; }
             string toWrite = this.NetworkConnection.Lon.ToString() + "," + this.NetworkConnection.Lat.ToString() + "," + 
                 this.NetworkConnection.Throttle.ToString() + "," + this.NetworkConnection.Rudder.ToString();
             this.streamWriter.WriteLine(toWrite); // the writing needs to be done in another func.
+            
         }
 
         public void OpenFileRead(string filePath)   //NEW
         {
+            if (isOpenForReading) { Debug.WriteLine("Can't open an already opened file!"); return; }
             this.isMoreFileLines = true;
             isEOF = "0";
             this.streamReader = new StreamReader(filePath);
+            isOpenForReading = true;
         }
 
         public void ReadFileValues()    //NEW
         {
+            if (!isOpenForReading) { Debug.WriteLine("Can't read from a closed file!");  return; }
             string line = streamReader.ReadLine();
             if (line == null)
             {
@@ -98,12 +108,19 @@ namespace FlightGearWebApp.Models
 
         public void CloseFileRead(string filePath)  //NEW
         {
+            if (!isOpenForReading) { Debug.WriteLine("Can't close a closed file!"); return; }
             this.streamReader.Close();
+            isOpenForReading = false;
+            Debug.WriteLine("Read File has been closed");
         }
 
         public void CloseFileWrite(string filePath) //NEW
         {
+            if (!isOpenForWriting) { return; }
+            Debug.WriteLine("Closed File to write");
             this.streamWriter.Close();
+            isOpenForWriting = false;
+            Debug.WriteLine("Write to File has been closed");
         }
         public void ToXml(XmlWriter writer) //NEW. why should a ToXml be in model?
         {
