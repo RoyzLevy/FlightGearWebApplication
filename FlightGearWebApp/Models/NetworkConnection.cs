@@ -12,44 +12,37 @@ using System.Diagnostics;
 
 namespace FlightGearWebApp.Models
 {
+    /// <summary>
+    /// Class NetworkConnection is responsible for connection to server and
+    /// receiving values back from it by sending commands in TCP protocol.
+    /// The class can also be written to XML file for later sending data to the
+    /// client side for display.
+    /// </summary>
     public class NetworkConnection
     {
-        private static Random rnd = new Random();
-        Thread connectThread; //thread will try and reach a server
-        int tryPulse = 500;
+        Thread connectThread;
+        private const int tryPulse = 500;
         public volatile bool stop = true;
         private TcpClient myTcpClient;
-        public static Mutex mutex = new Mutex();
-
-        public string Ip{ get; set;}
+        public string Ip { get; set; }
         public int Port { get; set; }
         public double Lon { get; set; }
         public double Lat { get; set; }
-
         public double Throttle { get; set; }
         public double Rudder { get; set; }
 
-
         /// <summary>
-        /// Connect opens program as server and looks for a server to reach
+        /// This function connects to flight gear server for sending data.
         /// </summary>
-        /// <param name="ip">adress of ip</param>
-        /// <param name="receivePort"></param>
-        /// <param name="sendPort"></param>
         public void Connect()
         {
-            Disconnect();
-            //Debug.WriteLine("NC - Mutex was claimed");
-            //if (!stop)
-            //{
-            //    Debug.WriteLine("NC - Mutex was released from !stop -> return");
-            //    return;
-            //}
+            this.Disconnect();
             stop = false;
 
             this.myTcpClient = new TcpClient();
             this.connectThread = new Thread(() =>
             {
+                // Keep trying to connect to server.
                 while (!myTcpClient.Connected)
                 {
                     try
@@ -60,33 +53,35 @@ namespace FlightGearWebApp.Models
                     catch (Exception)
                     {
                         Debug.WriteLine("Trying to connect to FG");
-                        /** Keep trying */
                     }
                 }
-                /** Upon reaching here program has been connected */
-                Debug.WriteLine("Connected!");
-                Debug.WriteLine("NC - Mutex was released from connect");
+                // Upon reaching here program has been connected.
             });
             this.connectThread.Start();
         }
+
+
         /// <summary>
-        /// This function closes program as a server and a client.
+        /// This function disconnects client from server.
         /// </summary>
         public void Disconnect()
         {
-            Debug.WriteLine("Hello from network disconnect! looking at stop which is " + stop);
+            // if already disconnected - do nothing.
             if (stop)
             {
-                Debug.WriteLine("Entered disco but something with flag..");
                 return;
             }
-            Debug.WriteLine("Connect thread abort");
+            // else - abort running connections.
             connectThread.Abort();
             this.myTcpClient.Close();
             stop = true;
         }
 
-
+        /// <summary>
+        /// This function receives a string and parses it 
+        /// </summary>
+        /// <param name="toBeParsed">string for the parsing.</param>
+        /// <returns>parsed value that was received from server.</returns>
         public string ParseValue(string toBeParsed)
         {
             string[] result = toBeParsed.Split('=');
@@ -97,73 +92,73 @@ namespace FlightGearWebApp.Models
         }
 
         /// <summary>
-        /// This function Writes a command to server
+        /// This function sends a command to the server through TCP protocol.
         /// </summary>
-        /// <param name="command">command to server</param>
-        public void Write()   //later make it with no args
+        public void Write()
         {
-            if (stop) { return; }
+            // if the connection was stopped - no send is needed.
+            if (stop)
+            {
+                return;
+            }
             string command = "";
-            Debug.WriteLine("In NC - Trying to write");
-            Debug.WriteLine("Write claimed mutex");
             NetworkStream writeStream = this.myTcpClient.GetStream();  //creates a network stream
 
-            //Lon
+            // Send Lon command in order to get it's value from server.
             command = "get /position/longitude-deg\r\n";
             int byteCount = Encoding.ASCII.GetByteCount(command); //how many bytes
             byte[] sendData = new byte[byteCount];  //create a buffer
             sendData = Encoding.ASCII.GetBytes(command);   //puts the message in the buffer
 
             writeStream.Write(sendData, 0, sendData.Length); //network stream to transfer what's in buffer
-            Debug.WriteLine("Just before printing what got back from the server");
             StreamReader STR = new StreamReader(writeStream);
             //Debug.WriteLine("Recieved from server " + STR.ReadLine());
             string lon = ParseValue(STR.ReadLine());
             Lon = double.Parse(lon);
 
-            //Lat
+            // Send Lat command in order to get it's value from server.
             command = "get /position/latitude-deg\r\n";
             byteCount = Encoding.ASCII.GetByteCount(command); //how many bytes
             sendData = new byte[byteCount];  //create a buffer
             sendData = Encoding.ASCII.GetBytes(command);   //puts the message in the buffer
 
             writeStream.Write(sendData, 0, sendData.Length); //network stream to transfer what's in buffer
-            Debug.WriteLine("Just before printing what got back from the server");
             STR = new StreamReader(writeStream);
             //Debug.WriteLine("Recieved from server " + STR.ReadLine());
             string lat = ParseValue(STR.ReadLine());
             Lat = double.Parse(lat);
 
-            //Throttle
+            // Send Throttle command in order to get it's value from server.
             command = "get /controls/engines/engine/throttle\r\n";
             byteCount = Encoding.ASCII.GetByteCount(command); //how many bytes
             sendData = new byte[byteCount];  //create a buffer
             sendData = Encoding.ASCII.GetBytes(command);   //puts the message in the buffer
 
             writeStream.Write(sendData, 0, sendData.Length); //network stream to transfer what's in buffer
-            Debug.WriteLine("Just before printing what got back from the server");
             STR = new StreamReader(writeStream);
             //Debug.WriteLine("Recieved from server " + STR.ReadLine());
             string throttle = ParseValue(STR.ReadLine());
             Throttle = double.Parse(throttle);
 
-            //Rudder
+            // Send Rudder command in order to get it's value from server.
             command = "get /controls/flight/rudder\r\n";
             byteCount = Encoding.ASCII.GetByteCount(command); //how many bytes
             sendData = new byte[byteCount];  //create a buffer
             sendData = Encoding.ASCII.GetBytes(command);   //puts the message in the buffer
 
             writeStream.Write(sendData, 0, sendData.Length); //network stream to transfer what's in buffer
-            Debug.WriteLine("Just before printing what got back from the server");
             STR = new StreamReader(writeStream);
             //Debug.WriteLine("Recieved from server " + STR.ReadLine());
             string rudder = ParseValue(STR.ReadLine());
             Rudder = double.Parse(rudder);
-
-            Debug.WriteLine("Write released mutex");
         }
 
-    public void ToXml(XmlWriter writer)
+        /// <summary>
+        /// This function receives an XML writer and writes the details of the Network Connection
+        /// to it. This is useful for later sending the XML to the client side for displaying values.
+        /// </summary>
+        /// <param name="writer"></param>
+        public void ToXml(XmlWriter writer)
         {
             writer.WriteStartElement("NetworkConnection");
             writer.WriteElementString("Ip", this.Ip);
