@@ -12,6 +12,9 @@ using System.Xml;
 
 namespace FlightGearWebApp.Models
 {
+    /// <summary>
+    /// The info model is responsible for aquiring info from the simulator.
+    /// </summary>
     public class InfoModel
     {
         private static InfoModel s_instace = null;
@@ -44,17 +47,27 @@ namespace FlightGearWebApp.Models
         public static Mutex WriteStreaMutex = new Mutex();
         public static Mutex WriteFileMutex = new Mutex();
 
+        /// <summary>
+        /// InfoModel constructor 
+        /// </summary>
         private InfoModel()
         {
             NetworkConnection = new NetworkConnection();
             isOpenForWriting = false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void ConnectNetwork()
         {
             NetworkConnection.Connect();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filePath"></param>
         public void CreateFile(string filePath)
         {
             Debug.WriteLine("creates a new string writer");

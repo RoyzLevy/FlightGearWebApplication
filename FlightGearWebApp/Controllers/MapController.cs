@@ -11,36 +11,35 @@ using System.Diagnostics;
 
 namespace FlightGearWebApp.Controllers
 {
+    /// <summary>
+    /// Map Controller is responible for the policy of coordination between the model and the view
+    /// </summary>
     public class MapController : Controller
     {
-        // GET: Map Index
+        /// <summary>
+        /// Get the Index view
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Index()
         {
             return View();
         }
 
-        // GET: Map draw
-        public ActionResult draw(string ip, int port, int time = 0)
-        {
-            InfoModel.Instance.NetworkConnection.Ip = ip;
-            InfoModel.Instance.NetworkConnection.Port = port;
-            InfoModel.Instance.Time = time;
-            InfoModel.Instance.ConnectNetwork(); // connect to server for reading.
-
-            Session["time"] = time;
-            Debug.WriteLine("Bringing draw view back");
-            return View();
-        }
-
-        // GET: Map display
-        public ActionResult display(string ip, int port, int time = 0)
+        /// <summary>
+        /// Get the Display View
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <param name="port"></param>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        public ActionResult Display(string ip, int port, int time = 0)
         {
             Debug.WriteLine("Hello from MapController with network display unknown!");
             IPAddress ipAddress;
             if (IPAddress.TryParse(ip, out ipAddress))
             {
-                // if the route action should be simple display.
-                // return the normal display with default time.
+                // if the route action should be simple Display.
+                // return the normal Display with default time.
                 if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork
                     || ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
                 {
@@ -54,8 +53,8 @@ namespace FlightGearWebApp.Controllers
                     return View();
                 }
             }
-            // else, the ip is a file name thus the port is the display-rate
-            // and will return the display from the given file.
+            // else, the ip is a file name thus the port is the Display-rate
+            // and will return the Display from the given file.
                 InfoModel.Instance.FilePath = AppDomain.CurrentDomain.BaseDirectory + ip + ".csv";
                 InfoModel.Instance.Time = port;
             
@@ -66,7 +65,16 @@ namespace FlightGearWebApp.Controllers
             return View();
         }
 
-        public ActionResult save(string ip, int port, int time, int timeout, string filePath)
+        /// <summary>
+        /// Get the Save View
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <param name="port"></param>
+        /// <param name="time"></param>
+        /// <param name="timeout"></param>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public ActionResult Save(string ip, int port, int time, int timeout, string filePath)
         {
             InfoModel.Instance.NetworkConnection.Ip = ip;
             InfoModel.Instance.NetworkConnection.Port = port;
@@ -81,28 +89,37 @@ namespace FlightGearWebApp.Controllers
             return View();
         }
 
+        /// <summary>
+        /// A request from the view to the model to open a new file
+        /// </summary>
+        /// <returns>The file name</returns>
         [HttpPost]
         public string OpenNewFile()
         {
-            Debug.WriteLine("creating a file");
             string fileName = InfoModel.Instance.FilePath;
             InfoModel.Instance.OpenFileWrite(fileName);
-
             return fileName;
         }
 
+        /// <summary>
+        /// A request from the view to the model to write to the currently opened for writing file
+        /// </summary>
+        /// <returns>The file name</returns>
         [HttpPost]
         public string WriteToFile()
         {
-            Debug.WriteLine("start writing");
             string fileName = InfoModel.Instance.FilePath;
             InfoModel.Instance.WriteToFile(fileName);
 
             return fileName;
         }
 
+        /// <summary>
+        /// A request from the view to the model to close the currently opened for reading file
+        /// </summary>
+        /// <returns>The file name</returns>
         [HttpPost]
-        public string CloseFileRead()   //NEW
+        public string CloseFileRead()
         {
             string fileName = InfoModel.Instance.FilePath;
             InfoModel.Instance.CloseFileRead(fileName);
@@ -110,8 +127,12 @@ namespace FlightGearWebApp.Controllers
             return fileName;
         }
 
+        /// <summary>
+        /// A request from the view to the model to close the currently opened for writing file
+        /// </summary>
+        /// <returns>The file name</returns>
         [HttpPost]
-        public string CloseFileWrite()   //NEW
+        public string CloseFileWrite()
         {
             string fileName = InfoModel.Instance.FilePath;
             InfoModel.Instance.CloseFileWrite(fileName);
@@ -119,8 +140,12 @@ namespace FlightGearWebApp.Controllers
             return fileName;
         }
 
+        /// <summary>
+        /// A request from the view to the model to get an xml representation of the model
+        /// </summary>
+        /// <returns>An xml representation of the model</returns>
         [HttpPost]
-        public string GetInfoModelXML() //NEW
+        public string GetInfoModelXML()
         {
             var model = InfoModel.Instance;
 
@@ -132,29 +157,23 @@ namespace FlightGearWebApp.Controllers
             return this.InfoModelToXML(model);
         }
 
-        // These function initializes an XML format of the Network object.
-        //[HttpPost]
-        //public string GetNetwork()          
-        //{
-        //    var network = InfoModel.Instance.NetworkConnection;
-        //    Debug.WriteLine("about to write");
-        //    network.Write(); // read lat and lon from server to network object.
-
-        //    return ToXml(network);
-        //}
-
-
+        /// <summary>
+        /// A request from the view to the model to disconnect from Flight Gear
+        /// </summary>
         [HttpPost]
-        public string Disconnect()
+        public void Disconnect()        //TODO: check if it can be void
         {
             Debug.WriteLine("Hello from MapController in pre network disconnect");
             var network = InfoModel.Instance.NetworkConnection;
             network.Disconnect();
-            return "Simply-The-Best";
         }
-        // These function initializes an XML format of the Network object.
+
+        /// <summary>
+        /// A request from the view to the model to get an xml representation of the network class
+        /// </summary>
+        /// <returns>An xml representation of the network class</returns>
         [HttpPost]
-        public string GetNetworkXML()   //NEW
+        public string GetNetworkXML()
         {
             var network = InfoModel.Instance.NetworkConnection;
 
@@ -162,7 +181,13 @@ namespace FlightGearWebApp.Controllers
 
             return this.NetworkToXML(network);
         }
-        private string NetworkToXML(NetworkConnection network)  //NEW
+
+        /// <summary>
+        /// This function wraps the network class to an xml form 
+        /// </summary>
+        /// <param name="network">The network class to be wrapped</param>
+        /// <returns>A string representing the network class</returns>
+        private string NetworkToXML(NetworkConnection network)
         {
             StringBuilder sb = new StringBuilder();
             XmlWriterSettings settings = new XmlWriterSettings();
@@ -179,23 +204,11 @@ namespace FlightGearWebApp.Controllers
             return sb.ToString();
         }
 
-        //private string ToXml(NetworkConnection network)
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    XmlWriterSettings settings = new XmlWriterSettings();
-        //    XmlWriter writer = XmlWriter.Create(sb, settings);
-
-        //    writer.WriteStartDocument();
-        //    writer.WriteStartElement("NetworkConnections");
-
-        //    network.ToXml(writer);
-
-        //    writer.WriteEndElement();
-        //    writer.WriteEndDocument();
-        //    writer.Flush();
-        //    return sb.ToString();
-        //}
-
+        /// <summary>
+        /// This function wraps the model class to an xml form 
+        /// </summary>
+        /// <param name="model">The model class to be wrapped</param>
+        /// <returns>A string representing the model class</returns>
         public string InfoModelToXML(InfoModel model)
         {
             StringBuilder sb = new StringBuilder();
@@ -212,7 +225,5 @@ namespace FlightGearWebApp.Controllers
             writer.Flush();
             return sb.ToString();
         }
-
     }
-
 }

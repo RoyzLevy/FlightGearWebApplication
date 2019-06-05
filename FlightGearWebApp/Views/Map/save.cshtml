@@ -1,13 +1,12 @@
 ﻿@{
-        ViewBag.Title = "save";
-    }
-
-<html>
-<body background="~/Resources/export-map-share.png" style="background-repeat:no-repeat; background-size:cover; padding:0; margin:0" id="bgImg">
-    <canvas id="myCanvas" style="border:0.5px solid black"></></canvas>
+    ViewBag.Title = "save";
+}
+<html style="height:100%;">
+<body style="height:100%; padding:0; margin:0; left:0px; top:0px; z-index:1;">
+    <img src="~/Resources/export-map-share.png" onload="resizeCanvas()" style="background-repeat:no-repeat; background-size:cover; position:absolute; padding:0; margin:0; z-index:2; height:100%; width:100%; left:0px; top:0px;" id="bgImg" />
+    <canvas id="myCanvas" style="position:absolute; padding:0; margin:0; left:0px; top:0px; z-index:3;" />
 </body>
 </html>
-
 <script>
 
     $(window).bind('mousewheel DOMMouseScroll', function (event) {
@@ -16,14 +15,19 @@
         }
     });
 
-        ////Refresh Segment//
+    function resizeCanvas() {
+        cnvs.style.width = img.width + 'px';
+        cnvs.style.height = img.height + 'px';
+    }
 
+    window.addEventListener('load', resizeCanvas, false);
+    window.addEventListener('resize', resizeCanvas, false);
+
+    //////////////Quit Service Segment. Is called upon refresh page / quit page.
     window.onbeforeunload = function (e) {
             $.post("@Url.Action("Disconnect")");
             $.post("@Url.Action("CloseFileWrite")");
         }
-
-
 
     var img = document.getElementById('bgImg');
     img.width = window.innerWidth;
@@ -31,9 +35,8 @@
 
     var cnvs = document.getElementById("myCanvas");
 
-    cnvs.style.position = "absolute";
     cnvs.setAttribute('width', img.clientWidth);
-    cnvs.setAttribute('height', window.innerHeight - 26);
+    cnvs.setAttribute('height', window.innerHeight);
 
     var ctx = cnvs.getContext("2d");
 
@@ -46,8 +49,6 @@
     var firstTime = "1";
 
     singleDraw = (function () {
-        
-        /////////////////////
         //Drawing the line coming out of the point
         if (firstTime == "0") {
             ctx.strokeStyle = "red";
@@ -59,7 +60,7 @@
         //Only draw location-point first time
         else {
             ctx.beginPath();
-            ctx.arc(normalizedLon, normalizedLat, 2, 0, 100 * Math.PI, false);
+            ctx.arc(normalizedLon, normalizedLat, 2, 0, 200 * Math.PI, false);
             ctx.lineWidth = 6;
             ctx.strokeStyle = 'blue';
             ctx.stroke();
@@ -77,14 +78,13 @@
     var IntervalTime = @Session["time"] * 1000
     var IntervalTimeout = @Session["timeout"] * 1000
     function drawAndSavePlanePath() {
+        // if reached given time out - clear interval of drawing function and set stop false, for disconnecting.
         if (IntervalTimeout <= IntervalTime) {
             stop = "true";
-            //alert("Done writing!")
             clearInterval(functionIntervalId);
         }
         $.post("@Url.Action("GetNetworkXML")").done(function (xml) {
             if (stop == "false") {
-                //alert("writing..");
                 var xmlDoc = $.parseXML(xml),
                     $xml = $(xmlDoc),
                     NetworkLat = $xml.find("Lat").text();
@@ -92,16 +92,17 @@
                 $("#networkLat").text(NetworkLat);
                 $("#networkLon").text(NetworkLon);
                 $.post("@Url.Action("WriteToFile")");
+                // Normalize the values received from server to fit the screen.
                 normalizedLon = ((parseFloat(NetworkLon) + 180) * (cnvs.width) / 360.0);
                 normalizedLat = ((parseFloat(NetworkLat) + 90) * (cnvs.height) / 180.0);
-                singleDraw();
+                singleDraw(); // draw single value on the map.
             }
             else {
                  $.post("@Url.Action("CloseFileWrite")");
                 $.post("@Url.Action("Disconnect")");
             }
         });
-        IntervalTimeout -= IntervalTime;
+        IntervalTimeout -= IntervalTime; // decrease timeout value each iteration.
     }
     var functionIntervalId = setInterval(drawAndSavePlanePath, IntervalTime);
     drawAndSavePlanePath();
